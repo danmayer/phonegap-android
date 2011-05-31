@@ -59,6 +59,7 @@ public class NetworkManager extends Plugin {
 
     ConnectivityManager sockMan;
     TelephonyManager telephonyManager;
+    BroadcastReceiver networkReceiver;
 	
 	/**
 	 * Constructor.
@@ -80,12 +81,21 @@ public class NetworkManager extends Plugin {
 		// We need to listen to connectivity events to update navigator.connection
 		IntentFilter intentFilter = new IntentFilter() ;
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		ctx.registerReceiver(new BroadcastReceiver() {
-		    @Override
-		    public void onReceive(Context context, Intent intent) {				
-	            updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));				
-		    }
-		}, intentFilter);
+
+                networkReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {                             
+                    updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));      
+                    }
+                };
+                ctx.registerReceiver(networkReceiver, intentFilter);
+	}
+
+        /**
+        * Called when listener is to be shut down and object is being destroyed.
+        */
+        public void onDestroy() {
+	    this.ctx.unregisterReceiver(networkReceiver);
 	}
 
 	/**
